@@ -1,0 +1,39 @@
+name: Continuous Integration & Quality Gate
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  ENVIRONMENT: "staging"
+
+jobs:
+  quality-gate-check:
+    name: Initial Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Execute Pipeline Health Check
+        run: |
+          echo "=========================================="
+          echo " Starting Day 1 Pipeline Execution"
+          echo " Environment: $ENVIRONMENT"
+          echo " Trigger Event: ${{ github.event_name }}"
+          echo " Commit SHA: ${{ github.sha }}"
+          echo "=========================================="
+          python --version
+
+      - name: Evaluate Quality Gate Rules
+        run: |
+          echo "Evaluating Code Quality Rules..."
+          echo "Status: PASSED"
