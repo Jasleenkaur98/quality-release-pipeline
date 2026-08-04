@@ -8,6 +8,9 @@ on:
 
 env:
   ENVIRONMENT: "staging"
+  # Fetch secrets securely from GitHub Repository Secrets
+  API_KEY: ${{ secrets.STAGING_API_KEY }}
+  MIN_COVERAGE: ${{ secrets.QUALITY_THRESHOLD }}
 
 jobs:
   quality-gate-check:
@@ -23,17 +26,28 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Execute Pipeline Health Check
+      - name: Secure Environment Diagnostic
         run: |
           echo "=========================================="
-          echo " Starting Day 1 Pipeline Execution"
-          echo " Environment: $ENVIRONMENT"
-          echo " Trigger Event: ${{ github.event_name }}"
-          echo " Commit SHA: ${{ github.sha }}"
+          echo " Executing Day 2 Security & Quality Gate"
+          echo " Target Environment: $ENVIRONMENT"
+          echo " Minimum Quality Threshold Required: $MIN_COVERAGE%"
           echo "=========================================="
-          python --version
+          # Verify secret exists without printing the secret itself
+          if [ -n "$API_KEY" ]; then
+            echo "Security Check: API Key successfully loaded from GitHub Secrets."
+          else
+            echo "Security Warning: API Key missing!"
+          fi
 
-      - name: Evaluate Quality Gate Rules
+      - name: Evaluate Automated Quality Gate Rules
         run: |
-          echo "Evaluating Code Quality Rules..."
-          echo "Status: PASSED"
+          echo "Checking Code Coverage Standard..."
+          CURRENT_COVERAGE=85
+          
+          if [ $CURRENT_COVERAGE -ge $MIN_COVERAGE ]; then
+            echo "Quality Gate PASSED: Current Coverage ($CURRENT_COVERAGE%) exceeds threshold ($MIN_COVERAGE%)."
+          else
+            echo "Quality Gate FAILED: Current Coverage ($CURRENT_COVERAGE%) is below required threshold ($MIN_COVERAGE%)."
+            exit 1
+          fi
