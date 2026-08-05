@@ -1,53 +1,37 @@
-name: Continuous Integration & Quality Gate
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-env:
-  ENVIRONMENT: "staging"
-  # Fetch secrets securely from GitHub Repository Secrets
-  API_KEY: ${{ secrets.STAGING_API_KEY }}
-  MIN_COVERAGE: ${{ secrets.QUALITY_THRESHOLD }}
-
-jobs:
-  quality-gate-check:
-    name: Initial Quality Check
+security-scan:
+    name: Dependency Vulnerability Audit
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: "3.11"
+          node-version: '20'
 
-      - name: Secure Environment Diagnostic
-        run: |
-          echo "=========================================="
-          echo " Executing Day 2 Security & Quality Gate"
-          echo " Target Environment: $ENVIRONMENT"
-          echo " Minimum Quality Threshold Required: $MIN_COVERAGE%"
-          echo "=========================================="
-          # Verify secret exists without printing the secret itself
-          if [ -n "$API_KEY" ]; then
-            echo "Security Check: API Key successfully loaded from GitHub Secrets."
-          else
-            echo "Security Warning: API Key missing!"
-          fi
+      # Scans dependencies for known security vulnerabilities
+      - name: Run Audit
+        run: npm audit --audit-level=high
 
-      - name: Evaluate Automated Quality Gate Rules
+  package-release:
+    name: Build & Upload Artifact
+    needs: [security-scan]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Simulates building/bundling production code
+      - name: Build Application
         run: |
-          echo "Checking Code Coverage Standard..."
-          CURRENT_COVERAGE=85
-          
-          if [ $CURRENT_COVERAGE -ge $MIN_COVERAGE ]; then
-            echo "Quality Gate PASSED: Current Coverage ($CURRENT_COVERAGE%) exceeds threshold ($MIN_COVERAGE%)."
-          else
-            echo "Quality Gate FAILED: Current Coverage ($CURRENT_COVERAGE%) is below required threshold ($MIN_COVERAGE%)."
-            exit 1
-          fi
+          mkdir -p dist
+          echo "Release Build - $(date)" > dist/build-info.txt
+
+      # Saves built files as a downloadable GitHub Action artifact
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: dist/
