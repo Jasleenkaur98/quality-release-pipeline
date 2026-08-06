@@ -1,10 +1,16 @@
-name: CI Quality Gate & Test Matrix
+name: CI/CD Quality & Deployment Gate
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
+# Grant permissions required for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   security-scan:
@@ -18,7 +24,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-  
+
       - name: Run Audit
         run: npm audit || true
 
@@ -51,14 +57,32 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-  
+
       - name: Build Application
         run: |
           mkdir -p dist
-          echo "Release Build - $(date)" > dist/build-info.txt
-  
+          echo "<h1>Production Release</h1><p>Build Date: $(date)</p>" > dist/index.html
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: production-build
           path: dist/
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    needs: [package-release]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
