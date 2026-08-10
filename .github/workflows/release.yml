@@ -1,0 +1,29 @@
+name: Production Release Orchestrator
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Application
+        run: |
+          mkdir -p dist
+          echo "<h1>Production Release ${{ github.ref_name }}</h1><p>Published: $(date)</p>" > dist/index.html
+          tar -czvf release-${{ github.ref_name }}.tar.gz -C dist .
+
+      - name: Create Official GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-${{ github.ref_name }}.tar.gz
+          generate_release_notes: true
