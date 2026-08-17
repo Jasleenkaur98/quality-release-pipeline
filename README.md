@@ -1,23 +1,46 @@
-# Quality & Release Pipeline Framework
+# 🚀 Quality & Release Pipeline Framework
 
 ![CI Quality Gate](https://github.com/Jasleenkaur98/quality-release-pipeline/actions/workflows/ci-quality-gate.yml/badge.svg)
 
-A modern CI/CD release orchestration repository featuring automated quality gates, environment management, and release controls.
+An enterprise-grade CI/CD release orchestration repository featuring automated quality gates, environment management, performance optimizations, and semantic release controls.
 
-## 🚀 Pipeline Status
-- **CI Workflow:** Active (`ci-quality-gate.yml`)
-- **Quality Gates:** Fully Operational (Security + Test Matrix + Packaging)
+## 🛠️ Tech Stack & Tools
+- **CI/CD Platform:** GitHub Actions
+- **Security Audit:** `npm audit`
+- **Environment Matrix:** Node.js (18, 20, 22) on Ubuntu Latest
+- **Hosting / Deployment:** GitHub Pages
+- **Release Automation:** `softprops/action-gh-release` + Semantic Version Tags (`v*.*.*`)
 
-## ⚙️ Workflow Architecture
-- **Trigger:** Automated execution on `push` and `pull_request` to `main`.
-- **Environment:** Ubuntu Latest runner with Node.js matrix runtime.
-- **Quality Checks:** 
-  - **Dependency Audit:** Security vulnerability scanning via `npm audit`.
-  - **Test Matrix:** Concurrent unit testing on Node.js 18, 20, and 22.
-  - **Artifact Packaging:** Automatic build generation and storage on `main` merge.
+---
 
-  ## 🛡️ Enterprise Guardrails & Performance
-- **Caching:** Integrated `actions/cache` for npm dependencies to optimize build times.
-- **Semantic Releases:** Automatic release creation with changelogs triggered on `v*.*.*` tags.
-- **Branch Protection:** Enforced status checks and PR reviews on the `main` branch.
-- **Failure Handling:** Built-in alert hooks on job failures.
+## ⚙️ Pipeline Architecture
+
+[ Push / PR to main ]
+│
+▼
+┌──────────────────┐
+│ Security Audit   │ ──► npm audit (Vulnerability Scanning)
+└─────────┬────────┘
+│
+▼
+┌──────────────────┐
+│ Test Matrix      │ ──► Concurrent runs on Node.js 18, 20, & 22 (npm cache enabled)
+└─────────┬────────┘
+│
+▼
+┌──────────────────┐
+│ Package Artifact │ ──► Generate distribution build & upload pipeline artifacts
+└─────────┬────────┘
+│
+▼
+┌──────────────────┐
+│ CD Deployment    │ ──► Deploy live static application to GitHub Pages
+└──────────────────┘
+
+---
+
+## 🛡️ Enterprise Guardrails & Performance
+- **Dependency Caching:** Integrated `actions/cache` for npm dependencies to significantly reduce pipeline execution times.
+- **Semantic Releases:** Automatic production releases with auto-generated release notes triggered on `v*.*.*` tags.
+- **Branch Protection:** Enforced required status checks before merging code into `main`.
+- **Failure Alerts:** Native error handling and GitHub notifications triggered on workflow failures.
